@@ -1,6 +1,4 @@
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import Session
-from sqlalchemy.orm.session import sessionmaker
 
 
 DATABASE_URL: str = "sqlite+pysqlite:///:memory:"
