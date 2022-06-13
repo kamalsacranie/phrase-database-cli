@@ -1,4 +1,5 @@
 import os
+import yaml
 
 from typing import Optional
 
@@ -18,3 +19,13 @@ def get_db_url(db_type: str = "sqlite", db_path: Optional[str] = None) -> str:
         return f"{db_type}:///{os.environ['XDG_DATA_HOME']}/jot/phrase.db"
 
     return f"{db_type}:///{os.environ['HOME']}/desktop/phrase.db"
+
+
+# Should implement a way to get default config path from os var and also this
+# deffo should not be done in this file
+def get_config() -> dict:
+    if os.path.exists("../jot.yaml"):
+        with open("../jot.yaml") as f:
+            return yaml.load(f, Loader=yaml.FullLoader)
+    else:
+        return {}
