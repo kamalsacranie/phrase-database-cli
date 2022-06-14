@@ -66,26 +66,13 @@ def temp():
     return [
         urwid.Columns(
             [
-                ("pack", urwid.Text("Testing")),
-                ("pack", urwid.Text("Testing")),
-                ("pack", urwid.Text("Testing")),
-                ("pack", urwid.Text("Testing")),
-            ]
-        ),
-        urwid.Columns(
-            [
-                (20, urwid.Text("Testing")),
-                (20, urwid.Text("Testing")),
-                (20, urwid.Text("dfklsajfdslajkfjlda dfasl ")),
-                (20, urwid.Text("Testing")),
-            ]
-        ),
-        urwid.Columns(
-            [
-                ("pack", urwid.Text("jfdklsj alfjd sal jl jldfsa")),
-                ("pack", urwid.Text("Testing")),
-                ("pack", urwid.Text("Testing")),
-                ("pack", urwid.Text("Testing")),
+                ("weight", 2, urwid.Text("9999")),
+                (
+                    "weight",
+                    14,
+                    urwid.Text("The prince wen on to do everything he liked"),
+                ),
+                ("weight", 4, urwid.Text("page 66")),
             ]
         ),
     ]

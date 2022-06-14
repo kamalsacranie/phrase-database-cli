@@ -1,31 +1,42 @@
-from enum import Enum
+from enum import Enum, EnumMeta
 from typing import Optional, Tuple
 
-from sqlalchemy import Column, Integer, String, Table, create_engine, inspect
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Table,
+    create_engine,
+    inspect,
+    select,
+)
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.engine.reflection import Inspector
 from sqlalchemy.sql.schema import MetaData
 
+import config_schema as cs
 import utils
 
+
+# Need to find a better way to implement column changes etc. This simply won't
+# do
 
 CONFIG = utils.get_config()
 
 
 # This will not generate the ID column, that will always be done automatically
-def create_cols_enum():
+def create_cols_enum() -> EnumMeta:
     return (
         Enum(
-            "Columns", {key.lower(): value for key, value in CONFIG["columns"]}
+            "ColumnsEnum",
+            {key.upper(): value for key, value in CONFIG[cs.COLUMNS]},
         )
-        if "columns" in CONFIG.keys()
-        else Enum("Columns", {"PHRASE": 5, "REFERENCE": 4})
+        if cs.COLUMNS in CONFIG.keys()
+        else Enum("ColumnsEnum", {"PHRASE": 14, "REFERENCE": 4})
     )
 
-    #     if "columns" in [key.lower for key in CONFIG.keys()]:
-    #         create_cols_enum(CONFIG["columns"])
-    #
-    # Enum("Columns", {"ID": 1, "bar": 24})
+
+cols_enum = create_cols_enum()
 
 
 class Controller:
@@ -44,17 +55,13 @@ class Controller:
         if self.inspector.has_table(table_name):
             return None, f"{table_name} already exists in your database."
 
+        args = [Column(col.name.lower(), String(10000)) for col in cols_enum]
         new_table = Table(
             table_name,
             self.metadata_obj,
-            Column("id", Integer, primary_key=True, info={"width": "1"}),
-            Column("phrase", String(10000), info={"width": "6"}),
-            Column(
-                "reference", String(1000), info={"width": "3"}, comment="test"
-            ),
+            Column("id", Integer, primary_key=True),
+            *args,
         )
-
-        new_table.info
 
         self.metadata_obj.create_all()
 
@@ -85,6 +92,7 @@ class Controller:
 
 
 if __name__ == "__main__":
+    pass
     c = Controller("../testing.db")
     columns = c.inspector.get_columns("the prince")
     print(columns)
