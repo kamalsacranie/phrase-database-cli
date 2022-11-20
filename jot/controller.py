@@ -56,24 +56,24 @@ class Controller:
         if self.inspector.has_table(table_name):
             return None, f"{table_name} already exists in your database."
 
-        args = [Column(col.name.lower(), String(10000)) for col in cols_enum]
+        args = [Column(col.name, String(10000)) for col in cols_enum]
         new_table = Table(
             table_name,
-            self.metadata_obj,
+            self.metadata_obj,  # Links the new table to our metadata engine
             Column("id", Integer, primary_key=True),
             *args,
         )
-
+        # Creating our new tables using the metadata engine
         self.metadata_obj.create_all()
 
         return new_table, f"{table_name} sucessfully created."
 
     def get_table(self, table_name: str) -> Table:
-        "Reflects our table from our database"
-        reflexted_table = Table(
+        """Reflects our table from our database"""
+        reflected_table = Table(
             table_name, self.metadata_obj, autoload_with=self.engine
         )
-        return reflexted_table
+        return reflected_table
 
     def get_table_elements(self, table: Table | str) -> Tuple[Tuple]:
         """
@@ -90,9 +90,3 @@ class Controller:
             elements = tuple(conn.execute(select(table)))
 
         return elements
-
-
-if __name__ == "__main__":
-    c = Controller("../testing.db")
-    columns = c.inspector.get_columns("the prince")
-    print(columns)
