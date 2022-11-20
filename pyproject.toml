@@ -7,8 +7,8 @@ authors = ["Kamal Sacranie <kamalsjunkmail@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.10"
 SQLAlchemy = "^1.4.36"
-urwid = "^2.1.2"
 PyYAML = "^6.0"
+pytermgui = "^7.3.0"
 
 [tool.poetry.dev-dependencies]
 pip-autoremove = "^0.10.0"

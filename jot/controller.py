@@ -14,7 +14,6 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.engine.reflection import Inspector
 from sqlalchemy.sql.schema import MetaData
 
-import config_schema as cs
 from main import CONFIG
 import utils
 

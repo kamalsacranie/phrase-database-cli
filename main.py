@@ -47,6 +47,13 @@ class Config:
             "db_type"
         ]  # Surely theres a way to do this dynamically
 
+    @config_opt
+    def column_spec(self) -> str:
+        """Returns what the user set for db_type"""
+        return self._CONFIG[
+            "column_spec"
+        ]  # Surely theres a way to do this dynamically
+
     def _load_config(self, cfg_path: str) -> dict[str, str]:
         """Parses yaml config file
         :returns: config dictionary
