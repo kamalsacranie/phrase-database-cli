@@ -19,6 +19,24 @@ from main import CONFIG
 import utils
 
 
+# This will not generate the ID column, that will always be done automatically
+# There must be a better way to do this, surely. But I suppose, we should use
+# the unix philosophy of buildign an application which is focussed on one thing
+def create_cols_enum() -> EnumMeta:
+    """Dynamically creating an enum based on config options"""
+    return (
+        Enum(
+            "ColumnsEnum",
+            {key.upper(): value for key, value in CONFIG.column_spec},
+        )
+        if CONFIG.column_spec
+        else Enum("ColumnsEnum", {"phrase": 8, "reference": 2})
+    )
+
+
+cols_enum = create_cols_enum()
+
+
 class Controller:
     def __init__(self, db_path: Optional[str] = None):
 
