@@ -15,35 +15,18 @@ from sqlalchemy.engine.reflection import Inspector
 from sqlalchemy.sql.schema import MetaData
 
 import config_schema as cs
+from main import CONFIG
 import utils
-
-
-# Need to find a better way to implement column changes etc. This simply won't
-# do
-
-CONFIG = utils.get_config()
-
-
-# This will not generate the ID column, that will always be done automatically
-def create_cols_enum() -> EnumMeta:
-    return (
-        Enum(
-            "ColumnsEnum",
-            {key.upper(): value for key, value in CONFIG[cs.COLUMNS]},
-        )
-        if cs.COLUMNS in CONFIG.keys()
-        else Enum("ColumnsEnum", {"PHRASE": 14, "REFERENCE": 4})
-    )
-
-
-cols_enum = create_cols_enum()
 
 
 class Controller:
     def __init__(self, db_path: Optional[str] = None):
 
         # Either coming from config, passed in as cli arg, or fallback
-        self.db_url = utils.get_db_url(db_path=db_path)
+        self.db_url = utils.get_db_url(
+            db_type=CONFIG.db_type or "sqlite", db_path=CONFIG.db_path
+        )
+        # Future engine as per sqlalchemy docs
         self.engine: Engine = create_engine(self.db_url, future=True)
         self.inspector: Inspector = inspect(
             self.engine
@@ -92,7 +75,6 @@ class Controller:
 
 
 if __name__ == "__main__":
-    pass
     c = Controller("../testing.db")
     columns = c.inspector.get_columns("the prince")
     print(columns)
