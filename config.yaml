@@ -1,4 +1,4 @@
-db_path: "./"
+db_path: "../"
 column_spec:
   phrase: 8
   reference: 2

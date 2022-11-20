@@ -18,15 +18,12 @@ def config_opt(func):
 
 
 class Config:
-    config_opt_name = inspect.stack()[0][3]
-
     def __init__(self, config_file_path: str) -> None:
         self._CONFIG = self._load_config(config_file_path) or {}
 
     # Rationale for making all of these cleaning functions into properties is
     # that they will only be run when they are called and thus an instantiation
     # of the class does not make all the cleaning process run
-
     @config_opt
     def db_path(self) -> str:
         # Probably going to need to change this to get the absolute path from
@@ -62,4 +59,7 @@ class Config:
             return yaml.safe_load(f)
 
 
-CONFIG = Config("./config.yaml")
+CONFIG = Config("../config.yaml")
+
+if __name__ == "__main__":
+    pass
