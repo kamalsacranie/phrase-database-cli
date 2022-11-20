@@ -62,7 +62,7 @@ table_names = phrase_obj.inspector.get_table_names()
 # main = urwid.Padding(menu("Pythons", table_names), left=2, right=2)
 
 
-def temp():
+def main_layout():
     return [
         urwid.Columns(
             [
@@ -78,7 +78,9 @@ def temp():
     ]
 
 
-main = urwid.Padding(urwid.ListBox(temp()), left=2, right=2)
+# Our main ListBox which lies over our canvas
+main = urwid.Padding(urwid.ListBox(main_layout()), left=2, right=2)
+# Our base canvas
 top = urwid.Overlay(
     main,
     urwid.SolidFill("\N{MEDIUM SHADE}"),  # bottom widget
@@ -89,4 +91,6 @@ top = urwid.Overlay(
     min_width=20,
     min_height=9,
 )
-urwid.MainLoop(top, palette=[("reversed", "standout", "")]).run()
+if __name__ == "__main__":
+    # Best practice for starting a tui with urwid
+    urwid.MainLoop(top, palette=[("reversed", "standout", "")]).run()

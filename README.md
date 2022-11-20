@@ -20,3 +20,10 @@ tables in a datable to manage phrases I like/want to store.
 - Simply create tables in a user defined database and
   1. view those databases with a TUI
   1. using ncurses
+
+## Problems
+
+Unfortunately `urwid` is very unin**tui**tive^[Haha, TUI... like "terminal user
+interface"]. I have found a viable alternative, `PyTermGUI`, but this does mean
+learning another whole framework at 1am. Which, to be fair, I think I'm going to
+do...^[Despite having my professional ACA exams in about a week-and-a-half.]
