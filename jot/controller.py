@@ -12,6 +12,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.engine.reflection import Inspector
+from sqlalchemy.sql.base import ImmutableColumnCollection
+from sqlalchemy.sql.expression import column, insert, text
 from sqlalchemy.sql.schema import MetaData
 
 from main import CONFIG
@@ -26,14 +28,14 @@ def create_cols_enum() -> EnumMeta:
     return (
         Enum(
             "ColumnsEnum",
-            {key.upper(): value for key, value in CONFIG.column_spec},
+            {
+                key.upper(): CONFIG.column_spec[key]
+                for key in CONFIG.column_spec.keys()
+            },
         )
         if CONFIG.column_spec
-        else Enum("ColumnsEnum", {"phrase": 8, "reference": 2})
+        else Enum("ColumnsEnum", {"PHRASE": 8, "REFERENCE": 2})
     )
-
-
-cols_enum = create_cols_enum()
 
 
 class Controller:
@@ -43,19 +45,23 @@ class Controller:
         self.db_url = utils.get_db_url(
             db_type=CONFIG.db_type or "sqlite", db_path=CONFIG.db_path
         )
-        # Future engine as per sqlalchemy docs
+        # Future engine as per sqlalchemy docs. creating the engine creates our
+        # database if not created already
         self.engine: Engine = create_engine(self.db_url, future=True)
         self.inspector: Inspector = inspect(
             self.engine
         )  # Allows performing database schema inspection
         self.metadata_obj = MetaData(bind=self.engine)
+        # If our database exists we will reflect it onto our metadata
+        self.metadata_obj.reflect()
 
     def add_new_table(self, table_name: str) -> tuple[Optional[Table], str]:
         """Adds a new table"""
         if self.inspector.has_table(table_name):
             return None, f"{table_name} already exists in your database."
 
-        args = [Column(col.name, String(10000)) for col in cols_enum]
+        cols_enum = create_cols_enum()
+        args = [Column(col.name.lower(), String(10000)) for col in cols_enum]
         new_table = Table(
             table_name,
             self.metadata_obj,  # Links the new table to our metadata engine
@@ -86,7 +92,7 @@ class Controller:
         )
         return reflected_table
 
-    def get_table_elements(self, table: Table | str) -> Tuple[Tuple]:
+    def get_table_elements(self, table: Table | str) -> Tuple:
         """
         Returns all the elements in our table. Can take table or string as
         input
@@ -95,11 +101,7 @@ class Controller:
             table = self.get_table(table)
 
         with self.engine.connect() as conn:
-            # have to call the tuple function inside here to be able to take
-            # our elements variabel outside of the function the execute returns
-            # a query to the database which can only yield when it is open
             elements = tuple(conn.execute(select(table)))
-
         return elements
 
     def add_table_entry(self, table: Table | str) -> None:
