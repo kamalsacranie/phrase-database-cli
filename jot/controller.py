@@ -16,7 +16,7 @@ from sqlalchemy.sql.base import ImmutableColumnCollection
 from sqlalchemy.sql.expression import column, insert, text
 from sqlalchemy.sql.schema import MetaData
 
-from main import CONFIG
+from config import CONFIG
 import utils
 
 
@@ -81,8 +81,6 @@ class Controller:
         if type(table) is str:
             table = self.get_table(table)
         table_columns: ImmutableColumnCollection = table.c
-        with open("./temp", "w") as f:
-            f.write(str(table_columns))
         return table_columns.keys()
 
     def get_table(self, table_name: str) -> Table:
