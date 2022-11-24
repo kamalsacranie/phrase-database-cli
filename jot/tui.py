@@ -8,7 +8,9 @@ c = Controller(CONFIG.db_path)
 # Pro tip, you can literally use + to add stuff to the current window window + widget.value
 
 
-def submit(manager: ptg.WindowManager, window: ptg.Window) -> None:
+def submit_add_new_table(
+    manager: ptg.WindowManager, window: ptg.Window
+) -> None:
     form_data = {}
     for widget in window:
         if isinstance(widget, ptg.InputField):
@@ -31,13 +33,42 @@ def submit(manager: ptg.WindowManager, window: ptg.Window) -> None:
     window = first_window(manager, window)
 
 
+def submit_add_new_entry(
+    manager: ptg.WindowManager, window: ptg.Window, table: Table
+) -> None:
+    form_data = {}
+    for widget in window:
+        if isinstance(widget, ptg.InputField):
+            if widget.value == "":
+                # Directing back if we do not have a value for widget
+                pass
+                # create_new_jot(
+                #     manager,
+                #     window,
+                #     f"You did not fill in the '{widget.prompt}' field!",
+                # )
+            # perhaps look at the serialisation object
+            key = (
+                widget.prompt.strip()
+                .lower()
+                .replace(" ", "_")
+                .replace(":", "")
+            )
+            form_data[key] = widget.value
+    c.add_table_entry(table, form_data["phrase"], form_data["page_number"])
+    window = table_view(manager, window, table=table)
+
+
 def create_new_jot(
     manager: ptg.WindowManager, window: ptg.Window, *args
 ) -> None:
     manager.remove(window)
     window = ptg.Window(
         ptg.InputField("", prompt="Table name: "),
-        ptg.Button("Create table", onclick=lambda *_: submit(manager, window)),
+        ptg.Button(
+            "Create table",
+            onclick=lambda *_: submit_add_new_table(manager, window),
+        ),
         *args,
         width=60,
         box="DOUBLE",
@@ -48,8 +79,7 @@ def create_new_jot(
 def add_entry_view(
     manager: ptg.WindowManager,
     window: ptg.Window,
-    table_name: Table | str,
-    *args,
+    table: Table | str,
 ) -> None:
     manager.remove(window)
     window = ptg.Window(
@@ -57,7 +87,7 @@ def add_entry_view(
         ptg.InputField("", prompt="Page number: "),
         ptg.Button(
             "Add entry",
-            lambda *_: add_entry_view(manager, window, table_name=table),
+            lambda *_: submit_add_new_entry(manager, window, table=table),
         ),
         width=200,
         box="DOUBLE",
@@ -74,10 +104,19 @@ def column_list(
     return column_list
 
 
-def table_view(manager: ptg.WindowManager, window: ptg.Window, *args) -> None:
+def table_view(
+    manager: ptg.WindowManager, window: ptg.Window, *args, **kwargs
+) -> None:
     manager.remove(window)
     # Accessing the label of our table which is also the name
-    table = c.get_table(args[0][0].label)
+    # Passing through our table if we have the Table object in kwargs else we
+    # are passin through the table name string
+    table = (
+        # needs to be reworked as we should just create a table_name kwarg
+        kwargs["table"]
+        if "table" in kwargs.keys()
+        else c.get_table(args[0][0].label)
+    )
     column_names = c.get_table_columns(table)
     elements = c.get_table_elements(table)
     populated_columns = [
@@ -89,14 +128,26 @@ def table_view(manager: ptg.WindowManager, window: ptg.Window, *args) -> None:
         # We are goin g to need to set our column widths here. The only way I
         # can think to do this well is either hard code it or put it as an
         # option int eh config
-        ptg.Splitter(*[ptg.Container(*i) for i in populated_columns])
+        ptg.Splitter(
+            *[
+                ptg.Container(
+                    *i,
+                    width=len(
+                        max(
+                            [e.value for e in i],
+                            key=len,
+                        )
+                    ),
+                )
+                for i in populated_columns[1:]
+            ]
+        )
         if len(elements) > 0
         else ptg.Label("You have no entries in this table"),
         ptg.Button(
             "Add entry",
-            lambda *_: add_entry_view(manager, window, table_name=table),
+            lambda *_: add_entry_view(manager, window, table=table),
         ),
-        width=200,
         box="DOUBLE",
     )
     manager.add(window)
