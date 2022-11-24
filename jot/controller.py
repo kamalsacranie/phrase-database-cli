@@ -1,5 +1,4 @@
 from enum import Enum, EnumMeta
-from os import popen
 from typing import Optional, Tuple
 
 from sqlalchemy import (
@@ -27,14 +26,14 @@ def create_cols_enum() -> EnumMeta:
     return (
         Enum(
             "ColumnsEnum",
-            {
-                key.upper(): CONFIG.column_spec[key]
-                for key in CONFIG.column_spec.keys()
-            },
+            {key.upper(): value for key, value in CONFIG.column_spec},
         )
         if CONFIG.column_spec
-        else Enum("ColumnsEnum", {"PHRASE": 8, "REFERENCE": 2})
+        else Enum("ColumnsEnum", {"phrase": 8, "reference": 2})
     )
+
+
+cols_enum = create_cols_enum()
 
 
 class Controller:
@@ -44,22 +43,18 @@ class Controller:
         self.db_url = utils.get_db_url(
             db_type=CONFIG.db_type or "sqlite", db_path=CONFIG.db_path
         )
-        # Future engine as per sqlalchemy docs. creating the engine creates our
-        # database if not created already
+        # Future engine as per sqlalchemy docs
         self.engine: Engine = create_engine(self.db_url, future=True)
         self.inspector: Inspector = inspect(
             self.engine
         )  # Allows performing database schema inspection
         self.metadata_obj = MetaData(bind=self.engine)
-        # If our database exists we will reflect it onto our metadata
-        self.metadata_obj.reflect()
 
     def add_new_table(self, table_name: str) -> tuple[Optional[Table], str]:
         """Adds a new table"""
         if self.inspector.has_table(table_name):
             return None, f"{table_name} already exists in your database."
 
-        cols_enum = create_cols_enum()
         args = [Column(col.name, String(10000)) for col in cols_enum]
         new_table = Table(
             table_name,
@@ -75,6 +70,14 @@ class Controller:
     def get_tables(self) -> list:
         """Returns a list of our table names"""
         return self.metadata_obj.sorted_tables
+
+    def get_table_columns(self, table: Table) -> list[str]:
+        if type(table) is str:
+            table = self.get_table(table)
+        table_columns: ImmutableColumnCollection = table.c
+        with open("./temp", "w") as f:
+            f.write(str(table_columns))
+        return table_columns.keys()
 
     def get_table(self, table_name: str) -> Table:
         """Reflects our table from our database"""
@@ -98,6 +101,3 @@ class Controller:
             elements = tuple(conn.execute(select(table)))
 
         return elements
-
-
-c = Controller("../jot.db")
