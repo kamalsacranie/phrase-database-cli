@@ -101,3 +101,12 @@ class Controller:
             elements = tuple(conn.execute(select(table)))
 
         return elements
+
+    def add_table_entry(self, table: Table | str) -> None:
+        if type(table) is str:
+            table = self.get_table(table)
+
+        # We can make this dynamic by passing it through with kwargs
+        stmt = insert(table).values(phrase="This is a test", reference="9")
+        with self.engine.begin() as conn:
+            conn.execute(stmt)
