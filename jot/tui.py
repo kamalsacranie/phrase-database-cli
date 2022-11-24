@@ -1,7 +1,7 @@
 import pytermgui as ptg
 from sqlalchemy.sql.schema import Table
 from controller import Controller
-from main import CONFIG
+from config import CONFIG
 
 c = Controller(CONFIG.db_path)
 
@@ -121,10 +121,17 @@ def first_window(manager: ptg.WindowManager, window: ptg.Window):
     return window
 
 
-with ptg.WindowManager() as manager:
-    window = ptg.Window(
-        ptg.Button("Start", onclick=lambda *_: first_window(manager, window)),
-        width=60,
-        box="DOUBLE",
-    )
-    manager.add(window)
+def start_tui():
+    with ptg.WindowManager() as manager:
+        window = ptg.Window(
+            ptg.Button(
+                "Start", onclick=lambda *_: first_window(manager, window)
+            ),
+            width=60,
+            box="DOUBLE",
+        )
+        manager.add(window)
+
+
+if __name__ == "__main__":
+    start_tui()
