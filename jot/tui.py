@@ -86,6 +86,9 @@ def table_view(manager: ptg.WindowManager, window: ptg.Window, *args) -> None:
     ]
     window = ptg.Window(
         # Make config option to switch on and off pk
+        # We are goin g to need to set our column widths here. The only way I
+        # can think to do this well is either hard code it or put it as an
+        # option int eh config
         ptg.Splitter(*[ptg.Container(*i) for i in populated_columns])
         if len(elements) > 0
         else ptg.Label("You have no entries in this table"),
