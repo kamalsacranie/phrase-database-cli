@@ -13,7 +13,7 @@ from sqlalchemy import (
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.engine.reflection import Inspector
 from sqlalchemy.sql.base import ImmutableColumnCollection
-from sqlalchemy.sql.expression import column, insert, text
+from sqlalchemy.sql.expression import insert
 from sqlalchemy.sql.schema import MetaData
 
 from config import CONFIG
@@ -73,7 +73,7 @@ class Controller:
 
         return new_table, f"{table_name} sucessfully created."
 
-    def get_tables(self) -> list:
+    def get_tables(self) -> list[Table]:
         """Returns a list of our table names"""
         return self.metadata_obj.sorted_tables
 
@@ -83,10 +83,12 @@ class Controller:
         table_columns: ImmutableColumnCollection = table.c
         return table_columns.keys()
 
-    def get_table(self, table_name: str) -> Table:
+    def get_table(self, table: str | Table) -> Table:
         """Reflects our table from our database"""
+        if type(table) is Table:
+            return table
         reflected_table = Table(
-            table_name, self.metadata_obj, autoload_with=self.engine
+            table, self.metadata_obj, autoload_with=self.engine
         )
         return reflected_table
 
